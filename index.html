@@ -332,6 +332,140 @@ html, body {
 }
 .india-tag.show { opacity:1; }
 
+/* ── DEV CTA (Continue) ── */
+.dev-cta {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  margin-top:14px;
+  opacity:0;
+  transform:translateY(16px);
+  transition: opacity 1s ease 3.1s, transform 1s ease 3.1s;
+}
+.dev-cta.show { opacity:1; transform:translateY(0); }
+
+.dev-prompt {
+  font-family:'Rajdhani', sans-serif;
+  font-size:clamp(12px, 1.8vw, 15px);
+  font-weight:400;
+  letter-spacing:0.18em;
+  color:rgba(255,255,255,0.45);
+  text-transform:uppercase;
+  text-align:center;
+}
+
+#continueBtn {
+  position:relative;
+  display:inline-block;
+  font-family:'Rajdhani', sans-serif;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:0.4em;
+  text-transform:uppercase;
+  color:var(--deep);
+  background:linear-gradient(135deg, var(--gold2), var(--gold3) 50%, var(--gold));
+  border:none;
+  padding:15px 50px;
+  border-radius:4px;
+  cursor:pointer;
+  overflow:hidden;
+  isolation:isolate;
+  box-shadow:
+    0 0 18px rgba(201,168,76,0.5),
+    0 0 40px rgba(201,168,76,0.25),
+    inset 0 0 0 1px rgba(255,255,255,0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+#continueBtn::before {
+  content:'';
+  position:absolute;
+  top:0; left:-75%;
+  width:50%; height:100%;
+  background:linear-gradient(115deg, transparent, rgba(255,255,255,0.65), transparent);
+  transform:skewX(-25deg);
+  animation: btnShine 3.2s ease-in-out infinite;
+  z-index:1;
+}
+
+@keyframes btnShine {
+  0%   { left:-75%; }
+  45%  { left:125%; }
+  100% { left:125%; }
+}
+
+#continueBtn span {
+  position:relative;
+  z-index:2;
+}
+
+#continueBtn:hover {
+  transform:translateY(-2px) scale(1.04);
+  box-shadow:
+    0 0 28px rgba(240,208,128,0.85),
+    0 0 60px rgba(201,168,76,0.4),
+    inset 0 0 0 1px rgba(255,255,255,0.6);
+}
+
+#continueBtn:active {
+  transform:translateY(0) scale(0.97);
+}
+
+#continueBtn:disabled {
+  cursor:default;
+  opacity:0.6;
+  transform:none !important;
+}
+
+/* ── TRANSITION OVERLAY (on Continue click) ── */
+#transition-overlay {
+  position:fixed; inset:0;
+  background:radial-gradient(circle, var(--gold2) 0%, var(--ember) 35%, var(--crimson) 70%, transparent 100%);
+  opacity:0;
+  pointer-events:none;
+  z-index:200;
+  transform:scale(0.25);
+}
+
+#transition-overlay.active {
+  animation: warpOut 0.9s cubic-bezier(0.7,0,0.3,1) forwards;
+}
+
+@keyframes warpOut {
+  0%   { opacity:0; transform:scale(0.2); }
+  35%  { opacity:1; transform:scale(1.3); }
+  100% { opacity:1; transform:scale(7); }
+}
+
+#transition-label {
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Rajdhani', sans-serif;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:0.5em;
+  text-transform:uppercase;
+  color:var(--deep);
+  opacity:0;
+  pointer-events:none;
+  z-index:201;
+}
+
+#transition-label.active {
+  animation: labelFade 0.9s ease forwards;
+}
+
+@keyframes labelFade {
+  0%   { opacity:0; }
+  40%  { opacity:0; }
+  60%  { opacity:1; }
+  100% { opacity:1; }
+}
+
 /* ── REPLAY BUTTON ── */
 #replay {
   position:fixed;
@@ -360,6 +494,8 @@ html, body {
 
 <canvas id="bgCanvas"></canvas>
 <div id="flash"></div>
+<div id="transition-overlay"></div>
+<div id="transition-label">Entering Dev Build…</div>
 
 <div id="stage">
 
@@ -403,6 +539,12 @@ html, body {
     <div class="eka-tagline" id="tagline">Intelligence · Reimagined</div>
     <div class="eka-sub" id="sub">The next evolution of AI is here</div>
     <div class="india-tag" id="india">✦ Proudly Made in India 🇮🇳 ✦</div>
+
+    <!-- CONTINUE / DEV BUILD CTA -->
+    <div class="dev-cta" id="devCta">
+      <div class="dev-prompt">Want to try the dev version? Click on the button</div>
+      <button id="continueBtn" type="button"><span>Continue</span></button>
+    </div>
   </div>
 
 </div>
@@ -509,6 +651,8 @@ function startSequence(){
   const ekaPhase     = document.getElementById('eka-phase');
   const replay       = document.getElementById('replay');
   const flashEl      = document.getElementById('flash');
+  const devCta       = document.getElementById('devCta');
+  const continueBtn  = document.getElementById('continueBtn');
 
   // Reset all
   replay.classList.remove('visible');
@@ -517,6 +661,8 @@ function startSequence(){
   document.querySelectorAll('.e-letter').forEach(l=>l.classList.remove('appear'));
   document.getElementById('underline').classList.remove('expand');
   ['tagline','sub','india'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  devCta.classList.remove('show');
+  continueBtn.disabled = false;
 
   swastikPhase.style.opacity='1';
   swastikPhase.style.pointerEvents='auto';
@@ -571,16 +717,45 @@ function startSequence(){
       setTimeout(()=>document.getElementById('sub').classList.add('show'), 2100);
       setTimeout(()=>document.getElementById('india').classList.add('show'), 2600);
 
+      // Continue / dev build CTA
+      setTimeout(()=>devCta.classList.add('show'), 3100);
+
       // Replay button
       setTimeout(()=>{
         replay.classList.add('visible');
         sequenceRunning=false;
-      }, 3200);
+      }, 3400);
 
     }, 1000);
 
   }, 2500);
 }
+
+// ── CONTINUE BUTTON: TRANSACTION / TRANSITION EFFECT ──
+document.getElementById('continueBtn').addEventListener('click', function(e){
+  e.preventDefault();
+  if(this.disabled) return;
+  this.disabled = true;
+
+  const overlay = document.getElementById('transition-overlay');
+  const label   = document.getElementById('transition-label');
+
+  // Restart animations
+  overlay.classList.remove('active');
+  label.classList.remove('active');
+  void overlay.offsetWidth;
+  overlay.classList.add('active');
+  label.classList.add('active');
+
+  // Burst of embers from the button
+  const rect = this.getBoundingClientRect();
+  spawnEmbers(rect.left+rect.width/2, rect.top+rect.height/2, 150);
+
+  // Navigate after the warp transition completes
+  setTimeout(()=>{
+    window.location.href = 'https://abhiraj1121.github.io/eka-dev1';
+  }, 850);
+});
 
 // Start on load
 window.addEventListener('load', ()=>{
