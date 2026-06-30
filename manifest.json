@@ -1,7 +1,7 @@
 {
-  "name": "Swastik AI Assistant",
-  "short_name": "Swastik",
-  "description": "Swastik is an intelligent AI assistant with voice interaction and smart chat features.",
+  "name": "EKA AI Assistant",
+  "short_name": "EKA",
+  "description": "EKA is an intelligent AI assistant with voice interaction and smart chat features.",
   "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
