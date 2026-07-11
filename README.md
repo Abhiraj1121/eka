@@ -159,7 +159,7 @@ Open `http://127.0.0.1:5000` in your browser.
 **Abhi**
 Developer & Designer
 
-[![GitHub](https://img.shields.io/badge/GitHub-Abhiraj1121-181717?style=for-the-badge&logo=github)](https://github.com/Abhiraj1121)
+[![License](https://img.shields.io/badge/License-View_File-181717?style=for-the-badge&logo=github)](https://raw.githubusercontent.com/Abhiraj1121/eka/refs/heads/main/LICENSE?token=GHSAT0AAAAAAECNV3LBCGOOER2BB74T5P3S2SSW57A)
 
 *Built with curiosity. Deployed with confidence.*
 
