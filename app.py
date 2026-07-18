@@ -24,11 +24,9 @@ DEV_NAME   = os.getenv("DEV_NAME", "Abhi Raj Singh")
 
 # ── Model waterfall (all free tier) ──
 MODELS = [
-    {"id": "google/gemma-4-31b-it:free",       "max_tokens": 900,  "temp": 0.65},
-    {"id": "meta-llama/llama-3.3-70b-instruct:free",           "max_tokens": 900,  "temp": 0.65},
-    {"id": "nvidia/nemotron-3.5-content-safety:free",               "max_tokens": 800,  "temp": 0.60},
-    {"id": "poolside/laguna-xs.2:free",      "max_tokens": 700,  "temp": 0.60},
-    {"id": "google/gemma-3-27b-it:free",              "max_tokens": 700,  "temp": 0.65},
+    {"id": "google/gemma-4-26b-a4b-it:free",     "max_tokens": 900,  "temp": 0.65},
+    {"id": "nvidia/nemotron-3-super-120b-a12b:free",     "max_tokens": 900,  "temp": 0.65},
+    {"id": "poolside/laguna-xs-2.1:free",     "max_tokens": 900,  "temp": 0.65},
 ]
 
 # ── System prompts ──
@@ -174,14 +172,17 @@ def ai_query(user_input: str, history: list = None, system: str = None) -> str:
                 text   = (choice.get("message") or {}).get("content", "").strip()
                 if text:
                     return clean(text)
-                log.warning(f"  Empty reply from {model['id']}")
+                log.warning(f"  Empty reply from {model['id']} — raw: {resp.text[:500]}")
 
             elif resp.status_code == 429:
-                log.warning(f"  Rate-limited on {model['id']}, trying next…")
-                time.sleep(0.4)
+                log.warning(f"  Rate-limited on {model['id']}, trying next… body: {resp.text[:500]}")
+                time.sleep(2.0)
 
             elif 400 <= resp.status_code < 500:
-                log.warning(f"  Client error {resp.status_code}, skipping {model['id']}")
+                log.warning(f"  Client error {resp.status_code} on {model['id']}, skipping — body: {resp.text[:500]}")
+
+            else:
+                log.warning(f"  Server error {resp.status_code} on {model['id']} — body: {resp.text[:500]}")
 
         except requests.exceptions.Timeout:
             log.warning(f"  Timeout on {model['id']}")
