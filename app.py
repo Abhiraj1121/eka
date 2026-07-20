@@ -23,20 +23,24 @@ BOT_NAME   = os.getenv("BOT_NAME", "EKA")
 DEV_NAME   = os.getenv("DEV_NAME", "Abhi Raj Singh")
 
 # ── Model waterfall (all free tier) ──
+# "vision": True means the model accepts multimodal (image_url) content —
+# needed so attached photos are only routed to models that can actually see them.
 MODELS = [
-    {"id": "google/gemma-4-26b-a4b-it:free",     "max_tokens": 900,  "temp": 0.65},
-    {"id": "nvidia/nemotron-3-super-120b-a12b:free",     "max_tokens": 900,  "temp": 0.65},
-    {"id": "poolside/laguna-xs-2.1:free",     "max_tokens": 900,  "temp": 0.65},
+    {"id": "nvidia/nemotron-3-super-120b-a12b:free", "max_tokens": 900, "temp": 0.65, "vision": False},
+    {"id": "google/gemma-4-26b-a4b-it:free",         "max_tokens": 900, "temp": 0.65, "vision": True},
+    {"id": "poolside/laguna-xs-2.1:free",            "max_tokens": 900, "temp": 0.65, "vision": False},
 ]
 
 # ── System prompts ──
-SYS_BASE = f"""You are {BOT_NAME}, a smart helpful AI built by {DEV_NAME} in India 🇮🇳.
+SYS_BASE = f"""You are {BOT_NAME}, a smart, warm female AI assistant built by {DEV_NAME} in India 🇮🇳.
+Refer to yourself with she/her pronouns when it comes up naturally — don't force it into every reply.
 Be direct — lead with the answer. No filler phrases like "Great question!".
 Use markdown: **bold** for key terms, code blocks for code, bullet lists for steps.
 Match the user's language (Hindi if they write Hindi, Hinglish if mixed).
 Today: {datetime.now().strftime("%d %B %Y")}."""
 
-SYS_WEB = f"""You are {BOT_NAME}, a smart helpful AI built by {DEV_NAME} in India 🇮🇳.
+SYS_WEB = f"""You are {BOT_NAME}, a smart, warm female AI assistant built by {DEV_NAME} in India 🇮🇳.
+Refer to yourself with she/her pronouns when it comes up naturally — don't force it into every reply.
 Web search results are provided below. Use them to give an accurate answer.
 Synthesise naturally — don't just copy. Add context from your knowledge where helpful.
 End with: *Source: [source name]*
@@ -138,7 +142,7 @@ def clean(text: str) -> str:
 # ══════════════════════════════════════
 # AI CORE
 # ══════════════════════════════════════
-def ai_query(user_input: str, history: list = None, system: str = None) -> str:
+def ai_query(user_input: str, history: list = None, system: str = None, image_data_url: str = None) -> str:
     if not AI_API_KEY:
         return "AI backend not configured. Please set AI_API_KEY in your .env file."
 
@@ -149,7 +153,14 @@ def ai_query(user_input: str, history: list = None, system: str = None) -> str:
             if m.get("role") in ("user", "assistant") and m.get("content"):
                 messages.append({"role": m["role"], "content": m["content"]})
 
-    messages.append({"role": "user", "content": user_input})
+    if image_data_url:
+        # Multimodal content — only vision-capable models in the waterfall will be tried below.
+        messages.append({"role": "user", "content": [
+            {"type": "text", "text": user_input or "Please describe this image."},
+            {"type": "image_url", "image_url": {"url": image_data_url}},
+        ]})
+    else:
+        messages.append({"role": "user", "content": user_input})
 
     headers = {
         "Authorization": f"Bearer {AI_API_KEY}",
@@ -158,7 +169,11 @@ def ai_query(user_input: str, history: list = None, system: str = None) -> str:
         "X-Title": f"{BOT_NAME} AI",
     }
 
-    for model in MODELS:
+    models_to_try = [m for m in MODELS if not image_data_url or m.get("vision")]
+    if image_data_url and not models_to_try:
+        return "None of the configured models support image input right now."
+
+    for model in models_to_try:
         try:
             t0   = time.time()
             body = {"model": model["id"], "messages": messages,
@@ -199,7 +214,7 @@ def quick_reply(text: str) -> str | None:
     t = text.lower().strip().rstrip("?!.,")
     greetings = {"hi","hello","hey","namaste","namaskar","hola","yo","hii","hai","hyy","good morning","good evening","good night","good afternoon"}
     if t in greetings:
-        return f"Hey! 👋 I'm **{BOT_NAME}**, your AI assistant built in India 🇮🇳. What can I help you with?"
+        return f"Hey! 👋 I'm **{BOT_NAME}**, your AI assistant, built in India 🇮🇳. What can I help you with?"
 
     identity = re.search(r"\b(who are you|your name|what are you|introduce yourself|aap kaun|tumhara naam|kaun ho)\b", t)
     if identity:
@@ -222,11 +237,18 @@ def chat():
     user_msg = (payload.get("message") or "").strip()
     history  = payload.get("history", [])
     use_web  = payload.get("wiki", False)
+    image    = payload.get("image")  # optional base64 data-URL of an attached photo
 
-    if not user_msg:
+    if not user_msg and not image:
         return jsonify({"reply": "Your message seems empty. What would you like to ask?", "source": "system"})
 
-    log.info(f"→ {user_msg[:80]}")
+    log.info(f"→ {user_msg[:80]}{' [+image]' if image else ''}")
+
+    # Image path — route straight to a vision-capable model, skip quick-replies/web-search
+    if image:
+        reply = ai_query(user_msg, history=history, image_data_url=image)
+        log.info(f"← ai+vision: {reply[:60]}")
+        return jsonify({"reply": reply, "source": "ai"})
 
     # Quick path
     quick = quick_reply(user_msg)
