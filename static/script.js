@@ -19,11 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
     thumbsDown:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3z"/><path d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>',
     copy:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
     wave:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11.5V6a2 2 0 0 0-4 0v-.5"/><path d="M14 5.5V4a2 2 0 0 0-4 0v9"/><path d="M10 9.5a2 2 0 0 0-4 0v3.5c0 4 3 8 7 8s7-3 7-7v-2"/></svg>',
+    image:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
   };
   const SOURCE_BADGES = {
-    web:    { icon: ICONS.globe,  label: 'Web + AI' },
-    cached: { icon: ICONS.folder, label: 'Cached' },
-    ai:     { icon: ICONS.bot,    label: 'AI' },
+    web:       { icon: ICONS.globe,  label: 'Web + AI' },
+    cached:    { icon: ICONS.folder, label: 'Cached' },
+    ai:        { icon: ICONS.bot,    label: 'AI' },
+    generated: { icon: ICONS.image,  label: 'Generated' },
   };
 
   // ══════════════════════════════
@@ -58,6 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const voiceOnlyToggle  = document.getElementById('voiceOnlyToggle');
   const languageToggle   = document.getElementById('languageToggle');
   const webToggle        = document.getElementById('webToggle');
+  const imageToggle      = document.getElementById('imageToggle');
+  const settingImage     = document.getElementById('settingImage');
   const themeToggle      = document.getElementById('themeToggle');
   const speakingAnim     = document.getElementById('speakingAnimation');
   const wakeMicButton    = document.getElementById('wakeMicButton');
@@ -112,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isMuted          = false;
   let voiceOnly        = false;
   let webSearchEnabled = false;
+  let imageGenEnabled  = false;
   let recognition      = null;
   let isThinking       = false;
   let attachedImage    = null; // base64 string
@@ -187,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
   openSettingsBtn?.addEventListener('click', () => {
     settingMute.checked = isMuted;
     settingWeb.checked  = webSearchEnabled;
+    if (settingImage) settingImage.checked = imageGenEnabled;
     settingLang.value   = languageToggle.value;
     updateSessionCount();
     openModal(settingsOverlay);
@@ -351,10 +358,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // ══════════════════════════════
   settingMute?.addEventListener('change', () => { isMuted = settingMute.checked; muteToggle?.classList.toggle('active', isMuted); if (isMuted) speechSynthesis.cancel(); showToast(isMuted ? 'Muted' : 'Unmuted', isMuted ? ICONS.mute : ICONS.unmute); });
   settingWeb?.addEventListener('change',  () => { webSearchEnabled = settingWeb.checked; webToggle?.classList.toggle('active', webSearchEnabled); showToast(webSearchEnabled ? 'Web search on' : 'Web search off', ICONS.globe); });
+  settingImage?.addEventListener('change', () => {
+    imageGenEnabled = settingImage.checked;
+    imageToggle?.classList.toggle('active', imageGenEnabled);
+    imageToggle?.setAttribute('aria-pressed', imageGenEnabled);
+    if (imageToggle) imageToggle.title = imageGenEnabled ? 'Image Generation (ON)' : 'Image Generation (OFF)';
+    if (msg) msg.placeholder = imageGenEnabled ? 'Describe the image to generate…' : 'Ask EKA anything…';
+    showToast(imageGenEnabled ? 'Image generation on — describe what to create' : 'Image generation off', ICONS.image);
+  });
   settingLang?.addEventListener('change', () => { if (languageToggle) languageToggle.value = settingLang.value; });
   clearAllSessions?.addEventListener('click', () => { if (confirm('Delete all saved chat history?')) { clearAllChatSessions(); showToast('All history cleared', ICONS.check); updateSessionCount(); } });
   muteToggle?.addEventListener('click', () => { isMuted = !isMuted; muteToggle.classList.toggle('active', isMuted); if (settingMute) settingMute.checked = isMuted; if (isMuted) speechSynthesis.cancel(); showToast(isMuted ? 'Muted' : 'Unmuted', isMuted ? ICONS.mute : ICONS.unmute); });
   webToggle?.addEventListener('click', () => { webSearchEnabled = !webSearchEnabled; webToggle.classList.toggle('active', webSearchEnabled); webToggle.setAttribute('aria-pressed', webSearchEnabled); if (settingWeb) settingWeb.checked = webSearchEnabled; showToast(webSearchEnabled ? 'Web search on' : 'Web search off', ICONS.globe); });
+  imageToggle?.addEventListener('click', () => {
+    imageGenEnabled = !imageGenEnabled;
+    imageToggle.classList.toggle('active', imageGenEnabled);
+    imageToggle.setAttribute('aria-pressed', imageGenEnabled);
+    imageToggle.title = imageGenEnabled ? 'Image Generation (ON)' : 'Image Generation (OFF)';
+    if (settingImage) settingImage.checked = imageGenEnabled;
+    if (msg) msg.placeholder = imageGenEnabled ? 'Describe the image to generate…' : 'Ask EKA anything…';
+    showToast(imageGenEnabled ? 'Image generation on — describe what to create' : 'Image generation off', ICONS.image);
+  });
   voiceOnlyToggle?.addEventListener('click', () => { voiceOnly = !voiceOnly; document.body.classList.toggle('voice-only', voiceOnly); voiceOnlyToggle.classList.toggle('active', voiceOnly); if (voiceOnly) { wakeMicButton.style.display='flex'; speak("Hello, I'm EKA. Tap the mic."); } else { wakeMicButton.style.display='none'; msg.focus(); } showToast(voiceOnly ? 'Voice-only on' : 'Voice-only off', ICONS.mic); });
 
   // ── Appearance: font size / density / reduced motion ──
@@ -681,6 +705,48 @@ document.addEventListener('DOMContentLoaded', () => {
     chat.scrollTop = chat.scrollHeight;
   }
 
+  function addImageBubble(dataUrl, prompt) {
+    if (voiceOnly) return;
+
+    const row = document.createElement('div'); row.className = 'bubble-row bot';
+    const bubble = document.createElement('div'); bubble.className = 'bubble bot';
+
+    const img = document.createElement('img');
+    img.src = dataUrl; img.className = 'bubble-img generated-img'; img.alt = prompt;
+    img.loading = 'lazy';
+    img.addEventListener('click', () => window.open(dataUrl, '_blank'));
+    bubble.appendChild(img);
+
+    const caption = document.createElement('div');
+    caption.className = 'ai-text image-caption';
+    caption.textContent = prompt;
+    bubble.appendChild(caption);
+
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const badge = document.createElement('span'); badge.className = 'meta-badge';
+    const b = SOURCE_BADGES.generated;
+    badge.innerHTML = `${b.icon}<span>${b.label}</span>`;
+    meta.appendChild(badge);
+    meta.appendChild(document.createTextNode(new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })));
+    bubble.appendChild(meta);
+
+    row.appendChild(bubble);
+
+    const actions = document.createElement('div'); actions.className = 'bubble-actions';
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'bact-btn'; dlBtn.title = 'Download image'; dlBtn.innerHTML = ICONS.download;
+    dlBtn.addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = dataUrl; a.download = `eka-image-${Date.now()}.jpg`;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+    actions.appendChild(dlBtn);
+    row.appendChild(actions);
+
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
   function addTyping() {
     if (voiceOnly) return;
     const t = document.createElement('div'); t.className = 'bubble bot typing'; t.id = 'typingIndicator';
@@ -711,6 +777,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isThinking) return;
     playFx(720, 0.05);
 
+    // ── Image generation mode: the typed text is a prompt, not a chat message ──
+    if (imageGenEnabled && !attachedImage) {
+      chatHistory.push({ role: 'user', content: cleaned });
+      addBubble(cleaned, 'user');
+      msg.value = '';
+      addTyping(); isThinking = true; setStatus('thinking');
+
+      try {
+        const res = await fetch('/api/image', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: cleaned })
+        }).then(r => r.json());
+
+        removeTyping(); isThinking = false; setStatus('ready');
+
+        if (res.image) {
+          addImageBubble(res.image, cleaned);
+          chatHistory.push({ role: 'assistant', content: `[Generated an image for: ${cleaned}]` });
+          autosave();
+        } else {
+          addBubble(res.error || 'Image generation failed — please try again.', 'bot');
+        }
+      } catch {
+        removeTyping(); isThinking = false; setStatus('ready');
+        addBubble('Something went wrong generating that image. Please try again.', 'bot');
+      }
+      return;
+    }
+
     const imageToSend = attachedImage;
     if (attachedImage) { attachedImage = null; attachPreview.style.display = 'none'; attachBtn.classList.remove('has-file'); }
 
@@ -723,7 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const body = { message: cleaned || 'Please analyse this image.', history: chatHistory, wiki: webSearchEnabled };
       if (imageToSend) body.image = imageToSend;
 
-      const res = await fetch('https://eka-2zt0.onrender.com/api/chat', {
+      const res = await fetch('/api/chat', {
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
       }).then(r => r.json());
 
