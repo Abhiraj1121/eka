@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
       addTyping(); isThinking = true; setStatus('thinking');
 
       try {
-        const res = await fetch('/api/image', {
+        const res = await fetch('https://eka-2zt0.onrender.com/api/image', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: cleaned })
         }).then(r => r.json());
@@ -818,7 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const body = { message: cleaned || 'Please analyse this image.', history: chatHistory, wiki: webSearchEnabled };
       if (imageToSend) body.image = imageToSend;
 
-      const res = await fetch('/api/chat', {
+      const res = await fetch('https://eka-2zt0.onrender.com/api/chat', {
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
       }).then(r => r.json());
 
