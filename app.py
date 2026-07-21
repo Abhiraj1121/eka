@@ -4,11 +4,12 @@ Real-time web: DuckDuckGo (free, no key) + Wikipedia
 Models: Llama 4 Maverick → Scout → Qwen3 → Mistral (all free via OpenRouter)
 """
 
-import os, re, time, logging, requests
+import os, re, time, logging, requests, base64, urllib.parse
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 from flask_cors import CORS
+from ddgs import DDGS
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S")
@@ -37,13 +38,15 @@ Refer to yourself with she/her pronouns when it comes up naturally — don't for
 Be direct — lead with the answer. No filler phrases like "Great question!".
 Use markdown: **bold** for key terms, code blocks for code, bullet lists for steps.
 Match the user's language (Hindi if they write Hindi, Hinglish if mixed).
+if user ask generate image tell them to toggle image icon on top.
 Today: {datetime.now().strftime("%d %B %Y")}."""
 
 SYS_WEB = f"""You are {BOT_NAME}, a smart, warm female AI assistant built by {DEV_NAME} in India 🇮🇳.
 Refer to yourself with she/her pronouns when it comes up naturally — don't force it into every reply.
-Web search results are provided below. Use them to give an accurate answer.
-Synthesise naturally — don't just copy. Add context from your knowledge where helpful.
-End with: *Source: [source name]*
+Several web search results are provided below, each with its own source link. Use them together
+to give an accurate, up-to-date answer — cross-check details across results where they overlap.
+Synthesise naturally in your own words — don't just copy sentences. Add context from your knowledge where helpful.
+End with: *Source: [the single most relevant source name/domain]*
 Today: {datetime.now().strftime("%d %B %Y")}.
 
 WEB RESULTS:
@@ -52,34 +55,26 @@ WEB RESULTS:
 
 # ══════════════════════════════════════
 # WEB SEARCH — DuckDuckGo (free, no key)
-# Uses the DDG Instant Answer API
+# Uses the `duckduckgo_search` library for real web results (titles + snippets + links).
+# NOTE: this was previously hitting api.duckduckgo.com (the "Instant Answer" API), which
+# only returns something for dictionary/disambiguation-style queries — it silently
+# returned nothing for news, scores, weather, etc. This calls actual DDG search instead.
 # ══════════════════════════════════════
 def ddg_search(query: str) -> tuple[str | None, str]:
-    """DuckDuckGo Instant Answer API — completely free, no key needed."""
+    """Real DuckDuckGo web search — returns top result snippets, or None if it fails."""
     try:
-        r = requests.get(
-            "https://api.duckduckgo.com/",
-            params={"q": query, "format": "json", "no_html": 1, "skip_disambig": 1},
-            headers={"User-Agent": f"{BOT_NAME}AI/3.0"},
-            timeout=6,
-        )
-        d = r.json()
-        # Try best answer first, then abstract, then definition
-        for key in ("Answer", "AbstractText", "Definition"):
-            val = d.get(key, "").strip()
-            if val and len(val) > 40:
-                src = d.get("AbstractSource") or d.get("DefinitionSource") or "DuckDuckGo"
-                return val[:1200], src
-        # RelatedTopics fallback
-        topics = d.get("RelatedTopics", [])
+        results = DDGS().text(query, max_results=5, safesearch="moderate")
         snippets = []
-        for t in topics[:4]:
-            if isinstance(t, dict) and t.get("Text"):
-                snippets.append(t["Text"])
+        for r in results or []:
+            title = (r.get("title") or "").strip()
+            body  = (r.get("body") or "").strip()
+            href  = (r.get("href") or "").strip()
+            if body:
+                snippets.append(f"{title}\n{body}\nSource: {href}")
         if snippets:
-            return "\n".join(snippets)[:1200], "DuckDuckGo"
+            return "\n\n".join(snippets)[:2400], "DuckDuckGo"
     except Exception as e:
-        log.warning(f"DDG error: {e}")
+        log.warning(f"DDG search error: {e}")
     return None, ""
 
 
@@ -120,6 +115,32 @@ def web_search(query: str) -> tuple[str | None, str]:
     if content:
         return content, src
     return wikipedia_search(query)
+
+
+# ══════════════════════════════════════
+# IMAGE GENERATION — Pollinations.ai (free, no key)
+# ══════════════════════════════════════
+def generate_image(prompt: str) -> tuple[str | None, str | None]:
+    """Generates an image via Pollinations' free API. Returns (data_url, error)."""
+    try:
+        encoded = urllib.parse.quote(prompt.strip())
+        seed = int(time.time() * 1000) % 10_000_000
+        url = (
+            f"https://image.pollinations.ai/prompt/{encoded}"
+            f"?width=1024&height=1024&seed={seed}&nologo=true&safe=true"
+        )
+        r = requests.get(url, timeout=60, headers={"User-Agent": f"{BOT_NAME}AI/3.0"})
+        content_type = r.headers.get("content-type", "")
+        if r.status_code == 200 and content_type.startswith("image"):
+            b64 = base64.b64encode(r.content).decode()
+            return f"data:{content_type};base64,{b64}", None
+        log.warning(f"Pollinations non-image response: {r.status_code} {content_type}")
+        return None, "Image generation failed — please try a different prompt."
+    except requests.exceptions.Timeout:
+        return None, "Image generation timed out — please try again."
+    except Exception as e:
+        log.error(f"Image gen error: {e}")
+        return None, "Image generation failed — please try again."
 
 
 # ══════════════════════════════════════
@@ -268,6 +289,26 @@ def chat():
     reply = ai_query(user_msg, history=history)
     log.info(f"← ai: {reply[:60]}")
     return jsonify({"reply": reply, "source": "ai"})
+
+
+@app.route("/api/image", methods=["POST"])
+def image():
+    payload = request.get_json(silent=True) or {}
+    prompt  = (payload.get("prompt") or "").strip()
+
+    if not prompt:
+        return jsonify({"error": "Describe what you'd like me to draw."}), 400
+    if len(prompt) > 600:
+        return jsonify({"error": "That prompt is a bit long — try trimming it."}), 400
+
+    log.info(f"→ image: {prompt[:80]}")
+    data_url, err = generate_image(prompt)
+    if err:
+        log.warning(f"← image failed: {err}")
+        return jsonify({"error": err}), 502
+
+    log.info("← image: ok")
+    return jsonify({"image": data_url, "prompt": prompt, "source": "pollinations"})
 
 
 @app.route("/api/health")
