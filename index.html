@@ -1,478 +1,346 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
-<meta name="theme-color" content="#141218" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>Eka — AI Assistant</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23D0BCFF'/><text x='50%25' y='57%25' dominant-baseline='middle' text-anchor='middle' font-size='16' fill='%23141218' font-family='sans-serif' font-weight='700'>e</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EKA AI</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23C9A84C'/><path d='M16 8 L18.2 13.8 L24 16 L18.2 18.2 L16 24 L13.8 18.2 L8 16 L13.8 13.8 Z' fill='%230C0608'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="static/style.css" />
 </head>
-<body>
-
-<!-- ═══════════ SPLASH ═══════════ -->
-<div id="splash" class="splash">
-  <div class="splash-blob b1"></div>
-  <div class="splash-blob b2"></div>
-  <div class="splash-blob b3"></div>
-  <div class="splash-mark">
-    <div class="splash-ring-orbit"></div>
-    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-      <circle cx="28" cy="28" r="26" class="mark-ring" stroke="url(#g1)" stroke-width="2.5"/>
-      <path d="M28 14 L28 28 L38 34" class="mark-hand" stroke="url(#g1)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-      <defs><linearGradient id="g1" x1="0" y1="0" x2="56" y2="56"><stop offset="0%" stop-color="#D0BCFF"/><stop offset="100%" stop-color="#4FD8B8"/></linearGradient></defs>
-    </svg>
+<body class="dark">
+<!-- ══ LAUNCH SCREEN ══ -->
+<div class="launch-screen" id="launchScreen">
+  <div class="launch-mark">
+    <div class="launch-ring lr1"></div>
+    <div class="launch-ring lr2"></div>
+    <div class="launch-core">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z"/></svg>
+    </div>
   </div>
-  <div class="splash-word">
-    <span style="--i:0">E</span><span style="--i:1">k</span><span style="--i:2">a</span>
+  <div class="launch-wordmark">
+    <div class="launch-title">EKA</div>
+    <div class="launch-sub">AI Assistant</div>
   </div>
-  <div class="splash-tag">your everyday AI</div>
-  <div class="splash-progress"><span></span><span></span><span></span></div>
+  <div class="launch-track"></div>
 </div>
 
-<!-- ═══════════ SIGN-IN ═══════════ -->
-<div id="signin" class="signin">
-  <div class="signin-scrim"></div>
-  <div class="signin-card">
-    <div class="si-mark">
-      <svg width="40" height="40" viewBox="0 0 56 56" fill="none">
-        <circle cx="28" cy="28" r="26" stroke="url(#g2)" stroke-width="2.5"/>
-        <path d="M28 14 L28 28 L38 34" stroke="url(#g2)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <defs><linearGradient id="g2" x1="0" y1="0" x2="56" y2="56"><stop offset="0%" stop-color="#D0BCFF"/><stop offset="100%" stop-color="#4FD8B8"/></linearGradient></defs>
-      </svg>
-    </div>
-    <h1 class="si-title">Welcome to Eka</h1>
-    <p class="si-sub">Sign in to start chatting. Everything stays on this device.</p>
+<canvas id="bgCanvas"></canvas>
 
-    <div class="si-field">
-      <label for="siName">Name <span class="si-optional">Optional</span></label>
-      <input id="siName" type="text" placeholder="What should Eka call you?" maxlength="32" autocomplete="name" />
-    </div>
-
-    <div class="si-field">
-      <label for="siEmail">Email <span class="si-required">Required</span></label>
-      <input id="siEmail" type="email" placeholder="you@example.com" maxlength="64" autocomplete="email" inputmode="email" />
-      <div class="si-error" id="siError"></div>
-    </div>
-
-    <label class="si-check">
-      <input type="checkbox" id="siTerms" />
-      <span class="si-check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
-      <span>Keep my data on this device only</span>
-    </label>
-
-    <button class="si-submit" id="siSubmit">
-      <span>Continue</span>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    </button>
-    <p class="si-note">No password. Nothing leaves your device except your messages.</p>
-  </div>
-</div>
-
-<!-- ═══════════ APP SHELL ═══════════ -->
-<div id="app" class="app">
-  <canvas id="bgCanvas"></canvas>
-
-  <!-- ── CHAT VIEW ── -->
-  <div id="viewChat" class="view view-chat">
-    <header class="topbar">
-      <button id="btnMenu" class="icon-btn" aria-label="Menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>
-      </button>
-      <div class="topbar-title">
-        <div class="topbar-brand" id="topbarBrand">Eka</div>
-        <div class="topbar-status" id="mStatus"><span class="status-dot"></span><span class="status-text">Ready</span></div>
+<!-- ══ ONBOARDING MODAL (first visit) ══ -->
+<div class="modal-overlay" id="onboardOverlay">
+  <div class="modal onboard-modal" id="onboardModal">
+    <div class="onboard-diagonal"></div>
+    <div class="onboard-brand">
+      <div class="ob-emblem">
+        <div class="ob-ring r1"></div><div class="ob-ring r2"></div>
+        <div class="ob-core"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z"/></svg></div>
       </div>
-      <button id="btnWebToggle" class="icon-btn" aria-label="Web search" aria-pressed="false">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      <div class="ob-title">EKA</div>
+      <div class="ob-sub">AI Assistant · Made in India <svg class="flag-icon" width="14" height="10" viewBox="0 0 15 10"><rect width="15" height="3.33" y="0" fill="#FF9933"/><rect width="15" height="3.33" y="3.33" fill="#FFFFFF"/><rect width="15" height="3.33" y="6.66" fill="#138808"/><circle cx="7.5" cy="5" r="1.1" fill="none" stroke="#000088" stroke-width="0.25"/></svg></div>
+    </div>
+    <div class="onboard-body">
+      <div class="onboard-tagline">Your personal AI, ready to help with anything.</div>
+      <div class="setting-group">
+        <div class="setting-label">Your Name</div>
+        <input type="text" class="setting-input" id="obName" placeholder="Enter your name…" maxlength="32" />
+      </div>
+      <div class="setting-group">
+        <div class="setting-label">Gmail <span style="color:var(--text3);font-size:10px;">(optional)</span></div>
+        <input type="email" class="setting-input" id="obEmail" placeholder="you@gmail.com" maxlength="64" />
+      </div>
+      <button class="save-btn" id="obSave">Get Started <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;margin-left:2px"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z"/></svg></button>
+      <button class="guest-btn" id="obGuest">Continue as Guest <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-left:2px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      <p class="profile-note">All data stays in your browser. Nothing is sent to servers.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS MODAL ══ -->
+<div class="modal-overlay" id="settingsOverlay">
+  <div class="modal" id="settingsModal">
+    <div class="modal-header">
+      <span class="modal-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</span>
+      <button class="modal-close" id="settingsClose"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-group">
+        <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C22 6.012 17.461 2 12 2z"/></svg>Theme</div>
+        <div class="theme-grid">
+          <button class="theme-swatch active" data-theme="dark"><span class="swatch-preview dark-gold"></span>Dark Gold</button>
+          <button class="theme-swatch" data-theme="light"><span class="swatch-preview light-cream"></span>Light</button>
+          <button class="theme-swatch" data-theme="purple"><span class="swatch-preview purple-night"></span>Purple Night</button>
+          <button class="theme-swatch" data-theme="grid"><span class="swatch-preview black-grid"></span>Black Grid</button>
+          <button class="theme-swatch" data-theme="pinkpurple"><span class="swatch-preview pink-purple"></span>Pink Purple</button>
+          <button class="theme-swatch" data-theme="greenwhite"><span class="swatch-preview green-white"></span>Green White</button>
+          <button class="theme-swatch" data-theme="material"><span class="swatch-preview material-design"></span>Material</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Voice</div>
+        <div class="setting-row"><span>Mute voice output</span>
+          <label class="toggle-switch"><input type="checkbox" id="settingMute"/><span class="toggle-track"></span></label>
+        </div>
+        <div class="setting-row"><span>Language</span>
+          <select id="settingLang" class="setting-select">
+            <option value="auto">Auto detect</option>
+            <option value="en">English</option>
+            <option value="hi">हिंदी</option>
+            <option value="bn">বাংলা</option>
+            <option value="ta">தமிழ்</option>
+            <option value="te">తెలుగు</option>
+            <option value="mr">मराठी</option>
+            <option value="gu">ગુજરાતી</option>
+            <option value="kn">ಕನ್ನಡ</option>
+            <option value="ml">മലയാളം</option>
+            <option value="pa">ਪੰਜਾਬੀ</option>
+            <option value="ur">اردو</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="ar">العربية</option>
+            <option value="ru">Русский</option>
+            <option value="pt">Português</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20"/></svg>Web Search</div>
+        <div class="setting-row"><span>Enable web search</span>
+          <label class="toggle-switch"><input type="checkbox" id="settingWeb"/><span class="toggle-track"></span></label>
+        </div>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Image Generation</div>
+        <div class="setting-row"><span>Enable image generation mode</span>
+          <label class="toggle-switch"><input type="checkbox" id="settingImage"/><span class="toggle-track"></span></label>
+        </div>
+        <p class="profile-note">When on, whatever you type is used as a prompt to draw an image instead of chatting.</p>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>Appearance</div>
+        <div class="setting-row"><span>Font size</span>
+          <select id="settingFontSize" class="setting-select">
+            <option value="font-sm">Small</option>
+            <option value="font-md" selected>Medium</option>
+            <option value="font-lg">Large</option>
+          </select>
+        </div>
+        <div class="setting-row"><span>Message density</span>
+          <select id="settingDensity" class="setting-select">
+            <option value="cozy" selected>Cozy</option>
+            <option value="density-compact">Compact</option>
+          </select>
+        </div>
+        <div class="setting-row"><span>Reduce motion</span>
+          <label class="toggle-switch"><input type="checkbox" id="settingReduceMotion"/><span class="toggle-track"></span></label>
+        </div>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Sound</div>
+        <div class="setting-row"><span>UI sound effects</span>
+          <label class="toggle-switch"><input type="checkbox" id="settingSoundFx"/><span class="toggle-track"></span></label>
+        </div>
+        <div class="setting-row"><span>Send message on Enter</span>
+          <label class="toggle-switch"><input type="checkbox" id="settingEnterSend" checked/><span class="toggle-track"></span></label>
+        </div>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat History</div>
+        <div class="setting-row"><span>Saved sessions</span><span class="setting-stat" id="sessionCount">0 sessions</span></div>
+        <button class="danger-btn" id="exportAllSessions" style="margin-bottom:8px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Chat History</button>
+        <button class="danger-btn" id="clearAllSessions"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>Clear All Chat History</button>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><path d="M12 9v2m0 4h.01M10.29 3.86l-8.18 14.14A2 2 0 0 0 3.82 21h16.36a2 2 0 0 0 1.71-3l-8.18-14.14a2 2 0 0 0-3.42 0z"/></svg>Reset</div>
+        <button class="danger-btn" id="resetAppBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reset App to Defaults</button>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>About</div>
+        <div class="about-block"><b>EKA AI Assistant</b><br/>Version 1.1.0<br/>All data stays in your browser.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ USER PROFILE MODAL ══ -->
+<div class="modal-overlay" id="userOverlay">
+  <div class="modal" id="userModal">
+    <div class="modal-header">
+      <span class="modal-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Your Profile</span>
+      <button class="modal-close" id="userClose"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="user-avatar-wrap">
+        <!-- Avatar with photo upload -->
+        <div class="avatar-upload-zone" id="avatarUploadZone">
+          <div class="user-avatar-big" id="userAvatarBig">?</div>
+          <div class="avatar-overlay"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display:none" />
+        </div>
+        <div class="avatar-hint">Tap to change photo</div>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label">Display Name</div>
+        <input type="text" class="setting-input" id="profileName" placeholder="Enter your name…" maxlength="32" />
+      </div>
+      <div class="setting-group">
+        <div class="setting-label">Gmail Address</div>
+        <input type="email" class="setting-input" id="profileEmail" placeholder="you@gmail.com" maxlength="64" />
+      </div>
+      <div class="setting-group">
+        <div class="setting-label">About Me <span style="color:var(--text3);font-size:11px;">(optional)</span></div>
+        <input type="text" class="setting-input" id="profileAbout" placeholder="Student, Developer, Curious mind…" maxlength="60" />
+      </div>
+      <button class="save-btn" id="saveProfile">Save Profile</button>
+      <p class="profile-note">Stored locally in your browser. Never sent to any server.</p>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="user-card" id="userCardBtn">
+      <div class="user-avatar" id="userAvatarSmall">?</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarUserName">Guest User</div>
+        <div class="user-email" id="sidebarUserEmail">Tap to set profile</div>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:0.4"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </div>
+
+    <div class="brand">
+      <div class="brand-emblem">
+        <div class="emblem-ring r1"></div><div class="emblem-ring r2"></div>
+        <div class="emblem-core"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z"/></svg></div>
+      </div>
+      <div class="brand-text"><h1>EKA</h1><p class="brand-sub">AI Assistant</p></div>
+    </div>
+
+    <div class="status-pill"><span class="status-dot"></span><span id="modelLabel">Llama 4 · Online</span></div>
+
+    <!-- Chat sessions list -->
+    <div class="section-label">Chat Sessions</div>
+    <div class="sessions-wrap" id="sessionsWrap">
+      <div class="sessions-list" id="sessionsList"></div>
+      <p class="history-empty" id="sessionsEmpty">No saved sessions</p>
+      <button class="new-session-btn" id="newSessionBtn">+ New Chat</button>
+    </div>
+
+    <div class="section-label">Quick Ask</div>
+    <div class="quick-actions">
+      <button class="chip" data-q="What is artificial intelligence?">What is AI?</button>
+      <button class="chip" data-q="Tell me about yourself">About EKA</button>
+      <button class="chip" data-q="What can you help me with?">Your abilities</button>
+      <button class="chip" data-q="Who created you?">Who built you?</button>
+      <button class="chip" data-q="Tell me something interesting">Surprise me <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;margin-left:1px"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z"/></svg></button>
+      <button class="chip" data-q="Write a short poem about the stars">Write a poem</button>
+    </div>
+
+    <div class="sidebar-actions">
+      <button id="openSettings" class="action-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
       </button>
-      <button id="btnImageToggle" class="icon-btn" aria-label="Image generation" aria-pressed="false" title="Image generation">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/><path d="M18 2.3l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5z" fill="currentColor" stroke="none"/></svg>
+      <button id="clearChat" class="action-btn danger">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        Clear Chat
       </button>
-      <button id="btnNewChat" class="icon-btn" aria-label="New chat">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-      </button>
+    </div>
+    <div class="credits"><span>© 2026 EKA AI</span><span class="india-badge">1.0.21(beta)</span></div>
+  </aside>
+
+  <!-- ═══ CHAT AREA ═══ -->
+  <main class="chat-area">
+
+    <!-- Speaking animation — centered voice orb (globe) -->
+    <div id="speakingAnimation" class="speaking-anim" style="display:none">
+      <div class="voice-orb">
+        <div class="orb-halo"></div>
+        <div class="orb-ring ring1"></div>
+        <div class="orb-ring ring2"></div>
+        <div class="orb-ring ring3"></div>
+        <div class="orb-core">
+          <div class="orb-meridians"></div>
+          <div class="orb-shine"></div>
+        </div>
+      </div>
+      <span class="wave-label">EKA is speaking…</span>
+    </div>
+
+    <header class="chat-header">
+      <div class="header-left">
+        <button class="icon-btn sidebar-toggle" id="sidebarToggle" title="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="header-avatar"><div class="ha-emblem"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z"/></svg></div></div>
+        <div>
+          <div class="header-name">EKA</div>
+          <div class="header-status" id="headerStatus"><span class="hstatus-dot"></span> Ready</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="webToggle" class="icon-btn" title="Web Search (OFF)" aria-pressed="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20"/></svg>
+        </button>
+        <button id="imageToggle" class="icon-btn" title="Image Generation (OFF)" aria-pressed="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/><path d="M18 2.5l.55 1.25L19.8 4.3l-1.25.55L18 6.1l-.55-1.25L16.2 4.3l1.25-.55z" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <button id="muteToggle" class="icon-btn" title="Mute voice" aria-pressed="false">
+          <svg id="muteIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        </button>
+        <button id="voiceOnlyToggle" class="icon-btn" title="Voice-only mode" aria-pressed="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <select id="languageToggle" title="Language" class="lang-select">
+          <option value="auto">Auto</option><option value="en">English</option><option value="hi">हिंदी</option><option value="bn">বাংলা</option><option value="ta">தமிழ்</option><option value="te">తెలుగు</option><option value="mr">मराठी</option><option value="gu">ગુજરાતી</option><option value="kn">ಕನ್ನಡ</option><option value="ml">മലയാളം</option><option value="pa">ਪੰਜਾਬੀ</option><option value="ur">اردو</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="ja">日本語</option><option value="zh">中文</option><option value="ar">العربية</option><option value="ru">Русский</option><option value="pt">Português</option>
+        </select>
+        <button id="themeToggle" class="icon-btn" title="Toggle theme">
+          <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </div>
     </header>
 
-    <div id="speakGrid" class="speak-grid" hidden>
-      <div class="sg-cells" id="sgCells"></div>
-      <span class="sg-label">Eka is speaking</span>
-      <button id="sgStop" class="sg-stop" aria-label="Stop speaking">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-      </button>
-    </div>
+    <button id="wakeMicButton" class="wake-mic" style="display:none">
+      <div class="wake-pulse"></div>
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    </button>
 
-    <section id="chat" class="chat-scroll"></section>
+    <section id="chat" class="chat"></section>
 
-    <div class="suggestion-row" id="suggestionRow"></div>
-
-    <div class="attach-preview" id="mAttachPreview" hidden>
-      <img id="mAttachThumb" src="" alt="attached" />
-      <div class="attach-preview-info">Image attached</div>
-      <button id="mAttachRemove" class="icon-btn sm" aria-label="Remove attachment">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+    <!-- Attach preview strip -->
+    <div class="attach-preview" id="attachPreview" style="display:none">
+      <img id="attachThumb" class="attach-thumb" src="" alt="attached" />
+      <button class="attach-remove" id="attachRemove"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
 
     <div class="composer-wrap">
-      <div class="composer" id="mComposer">
-        <button id="mAttachBtn" class="round-btn" aria-label="Attach photo">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <div class="composer" id="composer">
+        <button id="mic" class="mic-btn" title="Voice input">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         </button>
-        <input type="file" id="mPhotoInput" accept="image/*" hidden />
-        <textarea id="mMsg" rows="1" placeholder="Message Eka…" autocomplete="off"></textarea>
-        <button id="mMic" class="round-btn" aria-label="Voice input">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <!-- Photo attach button -->
+        <button id="attachBtn" class="attach-btn" title="Attach photo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         </button>
-        <button id="mSend" class="send-btn" aria-label="Send message">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── SETTINGS VIEW (full page, Material You) ── -->
-  <div id="viewSettings" class="view view-settings" hidden>
-    <header class="topbar topbar-settings">
-      <button id="btnSettingsBack" class="icon-btn" aria-label="Back">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="topbar-title"><div class="topbar-brand">Settings</div></div>
-      <div style="width:40px"></div>
-    </header>
-
-    <div class="settings-scroll">
-
-      <!-- Profile card -->
-      <div class="profile-card">
-        <div class="profile-avatar" id="stAvatar">?</div>
-        <div class="profile-info">
-          <div class="profile-name" id="stName">Guest</div>
-          <div class="profile-email" id="stEmail">—</div>
-        </div>
-        <button class="profile-edit" id="stEditName" aria-label="Edit name">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <input type="file" id="photoInput" accept="image/*" style="display:none" />
+        <span id="mic-status" class="mic-status"></span>
+        <input id="msg" type="text" placeholder="Ask EKA anything…" autocomplete="off" />
+        <button id="send" class="send-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
       </div>
-
-      <!-- Appearance -->
-      <div class="settings-section">
-        <div class="settings-label">Appearance</div>
-        <div class="settings-card">
-          <div class="setting-row" id="rowThemeMode">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Theme</div>
-              <div class="setting-row-sub" id="themeModeSub">System default</div>
-            </div>
-            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-          <div class="setting-divider"></div>
-          <div class="setting-row-block">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a9 9 0 1 1 9-9 3 3 0 0 1-3 3h-2a2 2 0 0 0-2 2 2 2 0 0 0 .3 1.05A2 2 0 0 1 12 22z"/><circle cx="7.5" cy="10.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="11.5" cy="7" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="9.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Accent color</div>
-              <div class="setting-row-sub">Choose Eka's Material You palette</div>
-            </div>
-          </div>
-          <div class="swatch-row" id="swatchRow"></div>
-          <div class="setting-divider"></div>
-          <div class="setting-row-block">
-            <div class="setting-row-icon">Aa</div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Message text size</div>
-              <div class="setting-row-sub" id="fontSizeSub">Medium</div>
-            </div>
-          </div>
-          <input type="range" id="fontSizeSlider" class="m-slider" min="0" max="3" step="1" value="1" />
-          <div class="setting-divider"></div>
-          <div class="setting-row">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Reduce motion</div>
-              <div class="setting-row-sub">Simpler, calmer animations</div>
-            </div>
-            <label class="m-switch"><input type="checkbox" id="swReduceMotion"/><span></span></label>
-          </div>
-        </div>
-      </div>
-
-      <!-- AI behavior -->
-      <div class="settings-section">
-        <div class="settings-label">AI behavior</div>
-        <div class="settings-card">
-          <div class="setting-row" id="rowPersona">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/><circle cx="16" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="18" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Response style</div>
-              <div class="setting-row-sub" id="personaSub">Balanced</div>
-            </div>
-            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-          <div class="setting-divider"></div>
-          <div class="setting-row">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Web search</div>
-              <div class="setting-row-sub">Look things up before answering</div>
-            </div>
-            <label class="m-switch"><input type="checkbox" id="swWeb"/><span></span></label>
-          </div>
-          <div class="setting-divider"></div>
-          <div class="setting-row">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Image generation</div>
-              <div class="setting-row-sub">Turn your messages into AI-drawn images</div>
-            </div>
-            <label class="m-switch"><input type="checkbox" id="swImage"/><span></span></label>
-          </div>
-          <div class="setting-divider"></div>
-          <div class="setting-row">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 2z"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Suggested replies</div>
-              <div class="setting-row-sub">Show quick follow-up chips</div>
-            </div>
-            <label class="m-switch"><input type="checkbox" id="swSuggestions"/><span></span></label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Voice & sound -->
-      <div class="settings-section">
-        <div class="settings-label">Voice &amp; sound</div>
-        <div class="settings-card">
-          <div class="setting-row">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="4,9 8,9 12,5 12,19 8,15 4,15" /><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Speak replies aloud</div>
-              <div class="setting-row-sub">Text-to-speech for responses</div>
-            </div>
-            <label class="m-switch"><input type="checkbox" id="swMute"/><span></span></label>
-          </div>
-          <div class="setting-divider"></div>
-          <div class="setting-row">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Sound effects</div>
-              <div class="setting-row-sub">Send &amp; receive chimes</div>
-            </div>
-            <label class="m-switch"><input type="checkbox" id="swSound"/><span></span></label>
-          </div>
-          <div class="setting-divider"></div>
-          <div class="setting-row">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="3" width="10" height="18" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/><path d="M3 9v3M3 8v5M21 9v3M21 8v5"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Haptic feedback</div>
-              <div class="setting-row-sub">Vibrate on taps &amp; actions</div>
-            </div>
-            <label class="m-switch"><input type="checkbox" id="swHaptic"/><span></span></label>
-          </div>
-          <div class="setting-divider"></div>
-          <div class="setting-row" id="rowLang">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Voice language</div>
-              <div class="setting-row-sub" id="langSub">Auto detect</div>
-            </div>
-            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-          <div class="setting-divider"></div>
-          <div class="setting-row" id="rowVoice">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"/></svg></div>
-            <div class="setting-row-text">
-              <div class="setting-row-title">Speaking voice</div>
-              <div class="setting-row-sub" id="voiceSub">Auto (best available)</div>
-            </div>
-            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Data -->
-      <div class="settings-section">
-        <div class="settings-label">Data &amp; privacy</div>
-        <div class="settings-card">
-          <button class="setting-row action" id="btnChatHistory">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg></div>
-            <div class="setting-row-text"><div class="setting-row-title">Chat history</div><div class="setting-row-sub" id="historyCountSub">0 conversations</div></div>
-            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          <div class="setting-divider"></div>
-          <button class="setting-row action" id="btnExportChat">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><polyline points="6 11 12 17 18 11"/><path d="M4 21h16"/></svg></div>
-            <div class="setting-row-text"><div class="setting-row-title">Export current chat</div><div class="setting-row-sub">Save as a text file</div></div>
-          </button>
-          <div class="setting-divider"></div>
-          <button class="setting-row action danger" id="btnClearData">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13l3 3-8 8H5a2 2 0 0 1-2-2V6z"/><path d="M9 22l3-3M13 22l3-3M17 22l2-2"/></svg></div>
-            <div class="setting-row-text"><div class="setting-row-title">Clear all chat history</div><div class="setting-row-sub">This can't be undone</div></div>
-          </button>
-        </div>
-      </div>
-
-      <!-- Account -->
-      <div class="settings-section">
-        <div class="settings-label">Account</div>
-        <div class="settings-card">
-          <button class="setting-row action danger" id="btnSignOut">
-            <div class="setting-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
-            <div class="setting-row-text"><div class="setting-row-title">Sign out</div><div class="setting-row-sub">Clear this profile from device</div></div>
-          </button>
-        </div>
-      </div>
-
-      <div class="settings-foot">
-        <div class="foot-mark">
-          <svg width="22" height="22" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="26" stroke="var(--md-primary)" stroke-width="2.5"/><path d="M28 14 L28 28 L38 34" stroke="var(--md-primary)" stroke-width="3.5" stroke-linecap="round" fill="none"/></svg>
-        </div>
-        <div>Eka AI · Version 2.0 · Material You</div>
-      </div>
+      <div class="composer-hint">EKA is an ai and can make mistakes. Please double check the response.</div>
     </div>
-  </div>
-
-  <!-- ── Slide-up MENU sheet (chat list / nav) ── -->
-  <div class="sheet-scrim" id="mSheetOverlay">
-    <div class="sheet" id="mSheet">
-      <div class="sheet-handle"></div>
-      <div class="sheet-user" id="sheetUserRow">
-        <div class="sheet-avatar" id="mSheetAvatar">?</div>
-        <div class="sheet-user-txt">
-          <div class="sheet-name" id="mSheetName">Guest</div>
-          <div class="sheet-email" id="mSheetEmail">—</div>
-        </div>
-        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-
-      <div class="sheet-scroll">
-        <button class="sheet-item primary-item" id="mNewChat" style="--d:0">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          New chat
-        </button>
-
-        <div class="sheet-search" style="--d:1">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input id="mHistorySearch" type="text" placeholder="Search chats" autocomplete="off" />
-        </div>
-
-        <div class="sheet-section-label" style="--d:2">Recent</div>
-        <div class="sheet-history-list" id="mHistoryList"></div>
-        <div class="sheet-history-empty" id="mHistoryEmpty">No saved conversations yet.</div>
-
-        <div class="sheet-section-label" style="--d:3">More</div>
-        <button class="sheet-item" id="mOpenSettings" style="--d:4">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          Settings
-        </button>
-      </div>
-      <div class="sheet-foot">Eka AI · Material You</div>
-    </div>
-  </div>
-
-  <!-- ── Bottom-sheet: theme mode picker ── -->
-  <div class="sheet-scrim" id="pickThemeOverlay">
-    <div class="sheet sheet-picker" id="pickThemeSheet">
-      <div class="sheet-handle"></div>
-      <div class="picker-title">Theme</div>
-      <div class="picker-options" id="themeOptions">
-        <button class="picker-option" data-val="system"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg></span><span>System default</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="dark"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg></span><span>Dark</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="light"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg></span><span>Light</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="black"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/></svg></span><span>Pure black</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Bottom-sheet: persona / response style picker ── -->
-  <div class="sheet-scrim" id="pickPersonaOverlay">
-    <div class="sheet sheet-picker" id="pickPersonaSheet">
-      <div class="sheet-handle"></div>
-      <div class="picker-title">Response style</div>
-      <div class="picker-options" id="personaOptions">
-        <button class="picker-option" data-val="balanced"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="3" x2="12" y2="21"/><path d="M7 21h10"/><path d="M5 7l-3 6a3.2 3.2 0 0 0 6 0l-3-6z"/><path d="M19 7l-3 6a3.2 3.2 0 0 0 6 0l-3-6z"/><path d="M5 7h14M12 3 5 7M12 3l7 4"/></svg></span><span>Balanced</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="concise"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 4 14 11 14 10 22 20 9 13 9 13 2"/></svg></span><span>Concise &amp; direct</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="detailed"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg></span><span>Detailed &amp; thorough</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="creative"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a9 9 0 1 1 9-9 3 3 0 0 1-3 3h-2a2 2 0 0 0-2 2 2 2 0 0 0 .3 1.05A2 2 0 0 1 12 22z"/><circle cx="7.5" cy="10.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="11.5" cy="7" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="9.5" r="1.2" fill="currentColor" stroke="none"/></svg></span><span>Creative &amp; casual</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Bottom-sheet: language picker ── -->
-  <div class="sheet-scrim" id="pickLangOverlay">
-    <div class="sheet sheet-picker" id="pickLangSheet">
-      <div class="sheet-handle"></div>
-      <div class="picker-title">Voice language</div>
-      <div class="picker-options" id="langOptions">
-        <button class="picker-option" data-val="auto"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg></span><span>Auto detect</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="en-IN"><span class="po-icon">IN</span><span>English (India)</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="en-GB"><span class="po-icon">UK</span><span>English (UK)</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="en-US"><span class="po-icon">US</span><span>English (US)</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-        <button class="picker-option" data-val="hi-IN"><span class="po-icon">हि</span><span>हिन्दी (Hindi)</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Bottom-sheet: speaking voice picker (options populated at runtime from available browser voices) ── -->
-  <div class="sheet-scrim" id="pickVoiceOverlay">
-    <div class="sheet sheet-picker" id="pickVoiceSheet">
-      <div class="sheet-handle"></div>
-      <div class="picker-title">Speaking voice</div>
-      <div class="picker-options" id="voiceOptions">
-        <button class="picker-option" data-val="auto"><span class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"/></svg></span><span>Auto (best available)</span><span class="po-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Chat history full list sheet ── -->
-  <div class="sheet-scrim" id="mHistoryOverlay">
-    <div class="sheet sheet-tall" id="mHistorySheet">
-      <div class="sheet-handle"></div>
-      <div class="sheet-title-row">
-        <h3>Chat history</h3>
-        <button class="close-btn" id="mHistoryClose" aria-label="Close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="history-full-list" id="mHistoryFullList"></div>
-      <div class="history-empty" id="mHistoryFullEmpty">No saved conversations yet.</div>
-    </div>
-  </div>
-
-  <!-- ── Edit-name modal ── -->
-  <div class="modal-scrim" id="mNameModalOverlay">
-    <div class="modal" id="mNameModal">
-      <h3>Change name</h3>
-      <p class="modal-sub">This is what Eka will call you.</p>
-      <input id="mNameInput" type="text" maxlength="32" placeholder="Your name" autocomplete="name" />
-      <div class="modal-actions">
-        <button id="mNameCancel" class="modal-btn ghost">Cancel</button>
-        <button id="mNameSave" class="modal-btn primary">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Confirm modal (clear data etc) ── -->
-  <div class="modal-scrim" id="mConfirmOverlay">
-    <div class="modal" id="mConfirmModal">
-      <h3 id="confirmTitle">Are you sure?</h3>
-      <p class="modal-sub" id="confirmSub">This action cannot be undone.</p>
-      <div class="modal-actions">
-        <button id="mConfirmCancel" class="modal-btn ghost">Cancel</button>
-        <button id="mConfirmOk" class="modal-btn danger">Confirm</button>
-      </div>
-    </div>
-  </div>
-
+  </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="{{ url_for('static', filename='app.js') }}"></script>
+<script src="static/script.js"></script>
 </body>
 </html>
