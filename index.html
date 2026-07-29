@@ -311,7 +311,21 @@
       <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
     </button>
 
-    <section id="chat" class="chat"></section>
+    <section id="chat" class="chat">
+      <!-- ══ EMPTY-STATE (shown only when the chat has no messages) ══ -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-logo">
+          <div class="es-ring r1"></div><div class="es-ring r2"></div>
+          <div class="es-core"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z"/></svg></div>
+        </div>
+        <div class="empty-state-text" id="emptyStateText">Hello! How can I help you today?</div>
+      </div>
+    </section>
+
+    <!-- Scroll-to-bottom button -->
+    <button id="scrollBottomBtn" class="scroll-bottom-btn" title="Scroll to latest">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
 
     <!-- Attach preview strip -->
     <div class="attach-preview" id="attachPreview" style="display:none">
