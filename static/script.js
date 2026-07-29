@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
     wave:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11.5V6a2 2 0 0 0-4 0v-.5"/><path d="M14 5.5V4a2 2 0 0 0-4 0v9"/><path d="M10 9.5a2 2 0 0 0-4 0v3.5c0 4 3 8 7 8s7-3 7-7v-2"/></svg>',
     image:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
     download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    edit:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>',
+    regenerate:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
+    chevronDown:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="6 9 12 15 18 9"/></svg>',
   };
   const SOURCE_BADGES = {
     web:       { icon: ICONS.globe,  label: 'Web + AI' },
@@ -236,13 +239,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     localStorage.setItem('eka-onboarded', '1');
     closeModal(onboardOverlay);
-    showGreeting();
+    showEmptyState();
   });
 
   obGuest?.addEventListener('click', () => {
     localStorage.setItem('eka-onboarded', '1');
     closeModal(onboardOverlay);
-    showGreeting();
+    showEmptyState();
   });
 
   // ══════════════════════════════
@@ -514,6 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSessionList();
   }
 
+  function clearChatBubbles() {
+    chat.querySelectorAll('.bubble-row, #typingIndicator').forEach(el => el.remove());
+  }
+
   function loadSession(id) {
     const sessions = getAllSessions();
     const session  = sessions.find(s => s.id === id);
@@ -521,11 +528,12 @@ document.addEventListener('DOMContentLoaded', () => {
     saveCurrentSession();
     currentSessionId = session.id;
     chatHistory = session.history || [];
-    chat.innerHTML = '';
-    chatHistory.forEach(m => {
-      if (m.role === 'user')      addBubble(m.content, 'user', '', false);
-      else if (m.role === 'assistant') addBubble(m.content, 'bot', 'ai', false);
+    clearChatBubbles();
+    chatHistory.forEach((m, i) => {
+      if (m.role === 'user')      addBubble(m.content, 'user', '', false, null, i);
+      else if (m.role === 'assistant') addBubble(m.content, 'bot', 'ai', false, null, i);
     });
+    if (chatHistory.length === 0) showEmptyState(); else hideEmptyState();
     renderSessionList();
     closeSidebar();
   }
@@ -534,8 +542,8 @@ document.addEventListener('DOMContentLoaded', () => {
     saveCurrentSession();
     currentSessionId = genId();
     chatHistory = [];
-    chat.innerHTML = '';
-    showGreeting();
+    clearChatBubbles();
+    showEmptyState();
     renderSessionList();
   }
 
@@ -618,11 +626,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function addBubble(text, who = 'bot', source = '', animate = false, imgData = null) {
+  function addBubble(text, who = 'bot', source = '', animate = false, imgData = null, idx = null) {
     if (voiceOnly) return;
 
     const row = document.createElement('div');
     row.className = `bubble-row ${who}`;
+    if (idx !== null) row.dataset.msgIndex = idx;
 
     const bubble = document.createElement('div');
     bubble.className = `bubble ${who}`;
@@ -679,7 +688,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     actions.appendChild(copyBtn);
 
+    if (who === 'user' && idx !== null) {
+      const editBtn = document.createElement('button');
+      editBtn.className = 'bact-btn'; editBtn.title = 'Edit message'; editBtn.innerHTML = ICONS.edit;
+      editBtn.addEventListener('click', () => startEdit(row, idx, text));
+      actions.appendChild(editBtn);
+    }
+
     if (who === 'bot') {
+      if (idx !== null && source) {
+        const regenBtn = document.createElement('button');
+        regenBtn.className = 'bact-btn'; regenBtn.title = 'Regenerate response'; regenBtn.innerHTML = ICONS.regenerate;
+        regenBtn.addEventListener('click', () => regenerateFrom(row, idx));
+        actions.appendChild(regenBtn);
+      }
+
       const likeBtn = document.createElement('button');
       likeBtn.className = 'bact-btn'; likeBtn.title = 'Good response'; likeBtn.innerHTML = ICONS.thumbsUp;
       likeBtn.addEventListener('click', () => {
@@ -703,6 +726,66 @@ document.addEventListener('DOMContentLoaded', () => {
     row.appendChild(actions);
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ══════════════════════════════
+  // EDIT last message — rewrite + resubmit, discarding everything after it
+  // ══════════════════════════════
+  function startEdit(row, idx, originalText) {
+    if (isThinking) return;
+    const bubble  = row.querySelector('.bubble');
+    const content = bubble.querySelector('.ai-text');
+    const actions = row.querySelector('.bubble-actions');
+    const prevHTML = content.innerHTML;
+
+    content.innerHTML = '';
+    const ta = document.createElement('textarea');
+    ta.className = 'edit-textarea';
+    ta.value = originalText;
+    content.appendChild(ta);
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+    const autoGrow = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+    autoGrow();
+    ta.addEventListener('input', autoGrow);
+
+    const editBar = document.createElement('div');
+    editBar.className = 'edit-actions';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button'; cancelBtn.className = 'edit-cancel-btn'; cancelBtn.textContent = 'Cancel';
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'button'; saveBtn.className = 'edit-save-btn'; saveBtn.textContent = 'Save & Submit';
+    editBar.appendChild(cancelBtn);
+    editBar.appendChild(saveBtn);
+    bubble.appendChild(editBar);
+    if (actions) actions.style.display = 'none';
+
+    const cleanup = () => { editBar.remove(); if (actions) actions.style.display = ''; };
+
+    cancelBtn.addEventListener('click', () => { content.innerHTML = prevHTML; cleanup(); });
+    saveBtn.addEventListener('click', () => {
+      const newText = ta.value.trim();
+      if (!newText) return;
+      chatHistory.length = idx;              // drop this message + everything after it
+      let sib = row;
+      while (sib) { const next = sib.nextElementSibling; sib.remove(); sib = next; }
+      sendMessage(newText);
+    });
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveBtn.click(); }
+      if (e.key === 'Escape') cancelBtn.click();
+    });
+  }
+
+  // ══════════════════════════════
+  // REGENERATE — drop this bot reply + anything after, re-ask the same question
+  // ══════════════════════════════
+  function regenerateFrom(row, idx) {
+    if (isThinking) return;
+    chatHistory.length = idx;
+    let sib = row;
+    while (sib) { const next = sib.nextElementSibling; sib.remove(); sib = next; }
+    fetchAndRenderReply();
   }
 
   function addImageBubble(dataUrl, prompt) {
@@ -771,21 +854,54 @@ document.addEventListener('DOMContentLoaded', () => {
   // ══════════════════════════════
   // SEND MESSAGE
   // ══════════════════════════════
+  // Shared: calls /api/chat using the current chatHistory (last entry must be
+  // the user's message) and renders the reply. Used by normal sends AND regenerate.
+  async function fetchAndRenderReply(imageToSend = null) {
+    const lastUser = [...chatHistory].reverse().find(m => m.role === 'user');
+    const messageText = lastUser ? lastUser.content : '';
+
+    addTyping(); isThinking = true; setStatus('thinking');
+    try {
+      const body = { message: messageText || 'Please analyse this image.', history: chatHistory, wiki: webSearchEnabled };
+      if (imageToSend) body.image = imageToSend;
+
+      const res = await fetch('/api/chat', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+      }).then(r => r.json());
+
+      removeTyping(); isThinking = false;
+      const srcLabel = res.source === 'web+ai' ? 'web' : res.source === 'local' ? 'cached' : 'ai';
+      chatHistory.push({ role:'assistant', content: res.reply });
+
+      setTimeout(() => {
+        addBubble(res.reply, 'bot', srcLabel, true, null, chatHistory.length - 1);
+        setStatus('speaking');
+        const plain = res.reply.replace(/(\*\*|__|[\*_`])/g,'').replace(/<[^>]*>/g,'').replace(/[^\p{L}\p{N}\s.,!?]/gu,'').trim();
+        speak(plain, () => setStatus('ready'));
+        autosave();
+      }, 200);
+    } catch {
+      removeTyping(); isThinking = false; setStatus('ready');
+      addBubble('Something went wrong. Please try again.', 'bot');
+    }
+  }
+
   async function sendMessage(text) {
     const cleaned = text.trim();
     if (!cleaned && !attachedImage) return;
     if (isThinking) return;
     playFx(720, 0.05);
+    hideEmptyState();
 
     // ── Image generation mode: the typed text is a prompt, not a chat message ──
     if (imageGenEnabled && !attachedImage) {
       chatHistory.push({ role: 'user', content: cleaned });
-      addBubble(cleaned, 'user');
+      addBubble(cleaned, 'user', '', false, null, chatHistory.length - 1);
       msg.value = '';
       addTyping(); isThinking = true; setStatus('thinking');
 
       try {
-        const res = await fetch('https://eka-2zt0.onrender.com/api/image', {
+        const res = await fetch('/api/image', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: cleaned })
         }).then(r => r.json());
@@ -810,33 +926,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (attachedImage) { attachedImage = null; attachPreview.style.display = 'none'; attachBtn.classList.remove('has-file'); }
 
     chatHistory.push({ role:'user', content: cleaned || '[image attached]' });
-    addBubble(cleaned || '', 'user', '', false, imageToSend);
+    addBubble(cleaned || '', 'user', '', false, imageToSend, chatHistory.length - 1);
     msg.value = '';
-    addTyping(); isThinking = true; setStatus('thinking');
-
-    try {
-      const body = { message: cleaned || 'Please analyse this image.', history: chatHistory, wiki: webSearchEnabled };
-      if (imageToSend) body.image = imageToSend;
-
-      const res = await fetch('https://eka-2zt0.onrender.com/api/chat', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
-      }).then(r => r.json());
-
-      removeTyping(); isThinking = false;
-      const srcLabel = res.source === 'web+ai' ? 'web' : res.source === 'local' ? 'cached' : 'ai';
-      chatHistory.push({ role:'assistant', content: res.reply });
-
-      setTimeout(() => {
-        addBubble(res.reply, 'bot', srcLabel, true);
-        setStatus('speaking');
-        const plain = res.reply.replace(/(\*\*|__|[\*_`])/g,'').replace(/<[^>]*>/g,'').replace(/[^\p{L}\p{N}\s.,!?]/gu,'').trim();
-        speak(plain, () => setStatus('ready'));
-        autosave();
-      }, 200);
-    } catch {
-      removeTyping(); isThinking = false; setStatus('ready');
-      addBubble('Something went wrong. Please try again.', 'bot');
-    }
+    await fetchAndRenderReply(imageToSend);
   }
 
   // ══════════════════════════════
@@ -931,14 +1023,46 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ══════════════════════════════
-  // GREETING
+  // EMPTY-STATE (centered logo + greeting shown only on an empty chat)
   // ══════════════════════════════
-  function showGreeting() {
+  const emptyState     = document.getElementById('emptyState');
+  const emptyStateText = document.getElementById('emptyStateText');
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function updateEmptyStateText() {
+    if (!emptyStateText) return;
     const p = JSON.parse(localStorage.getItem('eka-profile') || '{}');
-    const greeting = p.name
-      ? `Hello **${p.name}**! I'm **EKA**, your AI assistant.\n\nHow can I help you today?`
-      : `Hello! I'm **EKA**, your AI assistant.\n\nAsk me anything — questions, code, writing, analysis, or just a chat. How can I help?`;
-    addBubble(greeting, 'bot', '', true);
+    emptyStateText.innerHTML = p.name
+      ? `Hello <strong>${escapeHtml(p.name)}</strong>, how can I help you?`
+      : `Hello! How can I help you today?`;
+  }
+
+  function showEmptyState() {
+    updateEmptyStateText();
+    if (emptyState) emptyState.style.display = 'flex';
+  }
+
+  function hideEmptyState() {
+    if (emptyState) emptyState.style.display = 'none';
+  }
+
+  // ══════════════════════════════
+  // SCROLL-TO-BOTTOM BUTTON
+  // ══════════════════════════════
+  const scrollBottomBtn = document.getElementById('scrollBottomBtn');
+  if (scrollBottomBtn) {
+    chat.addEventListener('scroll', () => {
+      const distFromBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight;
+      scrollBottomBtn.classList.toggle('show', distFromBottom > 160);
+    });
+    scrollBottomBtn.addEventListener('click', () => {
+      chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+    });
   }
 
   // ══════════════════════════════
@@ -948,8 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSessionList();
   checkOnboarding();
 
-  // If onboarding already done, show greeting directly
-  if (localStorage.getItem('eka-onboarded')) showGreeting();
+  if (chatHistory.length === 0) showEmptyState(); else hideEmptyState();
 
   msg.focus();
 

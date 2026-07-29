@@ -263,8 +263,34 @@ html,body { height:100%; font-family:var(--font-body); font-size:15px; color:var
 @keyframes rippleOut{0%{transform:scale(0.6);opacity:0.8}100%{transform:scale(1.8);opacity:0}}
 
 /* Chat */
-.chat { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:6px; min-height:0; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+.chat { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:6px; min-height:0; scrollbar-width:thin; scrollbar-color:var(--border) transparent; position:relative; }
 .chat::-webkit-scrollbar{width:4px} .chat::-webkit-scrollbar-thumb{background:var(--border-md);border-radius:99px}
+
+/* Empty-state — centered logo + greeting, shown only when the chat is empty */
+.empty-state { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:20px; pointer-events:none; }
+.empty-state-logo { position:relative; width:64px; height:64px; display:flex; align-items:center; justify-content:center; }
+.es-core { width:44px; height:44px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; color:var(--ink); box-shadow:0 0 34px var(--gold-glow); }
+.es-core svg { width:22px; height:22px; }
+.es-ring { position:absolute; border:1px solid var(--gold-edge); border-radius:50%; animation:esPulse 3s ease-in-out infinite; }
+.es-ring.r1 { width:64px; height:64px; }
+.es-ring.r2 { width:90px; height:90px; animation-delay:0.6s; }
+@keyframes esPulse { 0%,100%{ transform:scale(0.9); opacity:0.45; } 50%{ transform:scale(1.06); opacity:1; } }
+.empty-state-text { font-family:'Rajdhani',sans-serif; font-size:19px; font-weight:500; color:var(--text2); max-width:320px; line-height:1.4; }
+.empty-state-text strong { color:var(--gold); font-weight:600; }
+
+/* Scroll-to-bottom button */
+.scroll-bottom-btn { position:absolute; right:20px; bottom:96px; width:38px; height:38px; border-radius:50%; background:var(--surface2); border:1px solid var(--border-md); color:var(--gold); display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; pointer-events:none; transform:translateY(6px); transition:opacity 0.2s, transform 0.2s; z-index:20; box-shadow:0 4px 16px rgba(0,0,0,0.3); }
+.scroll-bottom-btn.show { opacity:1; pointer-events:auto; transform:translateY(0); }
+.scroll-bottom-btn:hover { background:rgba(201,168,76,0.12); border-color:var(--gold); }
+
+/* Inline edit — user message being rewritten */
+.edit-textarea { width:100%; min-height:40px; resize:none; background:transparent; border:none; outline:none; color:var(--text); font-family:inherit; font-size:14px; line-height:1.6; padding:0; }
+.edit-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+.edit-cancel-btn, .edit-save-btn { font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:600; padding:6px 14px; border-radius:999px; cursor:pointer; transition:background var(--transition),border-color var(--transition); }
+.edit-cancel-btn { background:transparent; border:1px solid var(--border-md); color:var(--text2); }
+.edit-cancel-btn:hover { border-color:var(--text2); color:var(--text); }
+.edit-save-btn { background:var(--gold); border:1px solid var(--gold); color:var(--ink); }
+.edit-save-btn:hover { background:var(--gold-bright); }
 
 /* Bubble wrapper — lets us position the action bar outside bubble width */
 .bubble-row { display:flex; flex-direction:column; gap:4px; }
