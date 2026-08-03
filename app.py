@@ -21,7 +21,7 @@ CORS(app)
 AI_API_URL = os.getenv("AI_API_URL", "https://openrouter.ai/api/v1/chat/completions")
 AI_API_KEY = os.getenv("AI_API_KEY", "")
 BOT_NAME   = os.getenv("BOT_NAME", "EKA")
-DEV_NAME   = os.getenv("DEV_NAME", "Abhi Raj Singh")
+DEV_NAME   = os.getenv("DEV_NAME", "COGNIX STUDIO - Founder = Abhi Raj Singh")
 
 # ── Model waterfall (all free tier) ──
 # "vision": True means the model accepts multimodal (image_url) content —
