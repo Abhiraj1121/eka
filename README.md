@@ -169,6 +169,6 @@ Developer & Designer
 
 <div align="center">
 <div align="center">
-<sub>© Eka — License: <a href="https://raw.githubusercontent.com/Abhiraj1121/eka/refs/heads/main/LICENSE?token=GHSAT0AAAAAAECNV3LBPFJ3XEUXMA4JUZ6W2SSXF6Q">View License File</a></sub>
+<sub>© Eka — Tearm & Condition: <a href="https://abhiraj1121.github.io/ai-tc/">View T&C File</a></sub>
 </div>
 </div>
