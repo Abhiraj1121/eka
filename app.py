@@ -27,9 +27,10 @@ DEV_NAME   = os.getenv("DEV_NAME", "COGNIX STUDIO - Founder = Abhi Raj Singh")
 # "vision": True means the model accepts multimodal (image_url) content —
 # needed so attached photos are only routed to models that can actually see them.
 MODELS = [
-    {"id": "nvidia/nemotron-3-super-120b-a12b:free", "max_tokens": 900, "temp": 0.65, "vision": False},
-    {"id": "google/gemma-4-26b-a4b-it:free",         "max_tokens": 900, "temp": 0.65, "vision": True},
-    {"id": "poolside/laguna-xs-2.1:free",            "max_tokens": 900, "temp": 0.65, "vision": False},
+    {"id": "nvidia/nemotron-3-ultra-550b-a55b:free", "max_tokens": 2026, "temp": 0.65, "vision": False},
+    {"id": "minimax/minimax-m3:free", "max_tokens": 2026, "temp": 0.65, "vision": True},
+    {"id": "inclusionai/ling-3.0-flash-fin:free", "max_tokens": 2026, "temp": 0.65, "vision": False},
+    {"id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 2026, "temp": 0.65, "vision": True},
 ]
 
 # ── System prompts ──
