@@ -13,18 +13,17 @@
 <body class="dark">
 <!-- ══ LAUNCH SCREEN ══ -->
 <div class="launch-screen" id="launchScreen">
-  <div class="launch-mark">
-    <div class="launch-ring lr1"></div>
-    <div class="launch-ring lr2"></div>
-    <div class="launch-core">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z"/></svg>
-    </div>
+  <div class="ls-aurora"></div>
+  <div class="ls-stage">
+    <div class="ls-orbit o1"><i></i></div>
+    <div class="ls-orbit o2"><i></i></div>
+    <div class="ls-orbit o3"><i></i></div>
+    <div class="ls-burst"></div><div class="ls-burst b2"></div>
+    <div class="ls-orb"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L14.6 9.4 L22 12 L14.6 14.6 L12 22 L9.4 14.6 L2 12 L9.4 9.4 Z"/></svg></div>
   </div>
-  <div class="launch-wordmark">
-    <div class="launch-title">EKA</div>
-    <div class="launch-sub">AI Assistant</div>
-  </div>
-  <div class="launch-track"></div>
+  <div class="ls-title" aria-label="EKA"><span>E</span><span>K</span><span>A</span></div>
+  <div class="ls-tag">AI Assistant</div>
+  <div class="ls-bar"><b></b></div>
 </div>
 
 <canvas id="bgCanvas"></canvas>
@@ -80,13 +79,14 @@
           <button type="button" id="modePaid" aria-pressed="false">Paid</button>
         </div>
         <p class="profile-note" id="modeDesc" style="text-align:left;margin-top:8px"></p>
+        <p class="profile-note" id="freeModelsNote" style="text-align:left;margin:2px 0 0"></p>
         <div id="paidModelWrap" style="display:none;flex-direction:column;gap:8px;margin-top:6px">
           <div class="setting-label" style="margin:4px 0 0">Paid model</div>
           <select id="paidModelSelect" class="setting-select" style="width:100%"><option value="">Loading models…</option></select>
           <input type="text" id="paidModelCustom" class="setting-select" placeholder="provider/model-name  (e.g. openai/gpt-4o-mini)" autocomplete="off" spellcheck="false" style="display:none;width:100%">
           <span id="paidModelNote" class="profile-note" style="text-align:left;margin:0"></span>
         </div>
-        <p class="profile-note" style="text-align:left;margin-top:10px">Free mode uses the shared free models. Paid mode uses <b>your own</b> OpenRouter key and is billed to your OpenRouter account — the shared key is never used for it. Add your key in the <b>API Key</b> section.</p>
+        <p class="profile-note" style="text-align:left;margin-top:10px"><b>Free</b> uses free OpenRouter models. <b>Paid</b> switches to a different set of stronger, faster models and bills <b>your own</b> OpenRouter account per token. Both modes use the key in the <b>API Key</b> section.</p>
       </div>
       <div class="setting-group settings-panel" data-panel="sec-chat">
         <div class="setting-label">Chat &amp; Responses</div>
@@ -107,20 +107,46 @@
       <div class="setting-group settings-panel" data-panel="sec-theme">
         <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C22 6.012 17.461 2 12 2z"/></svg>Theme</div>
         <div class="theme-grid">
+          <div class="theme-group-label">Dark</div>
           <button class="theme-swatch active" data-theme="dark"><span class="swatch-preview dark-gold"></span>Dark Gold</button>
-          <button class="theme-swatch" data-theme="light"><span class="swatch-preview light-cream"></span>Light</button>
           <button class="theme-swatch" data-theme="purple"><span class="swatch-preview purple-night"></span>Purple Night</button>
           <button class="theme-swatch" data-theme="grid"><span class="swatch-preview black-grid"></span>Black Grid</button>
           <button class="theme-swatch" data-theme="pinkpurple"><span class="swatch-preview pink-purple"></span>Pink Purple</button>
-          <button class="theme-swatch" data-theme="greenwhite"><span class="swatch-preview green-white"></span>Green White</button>
           <button class="theme-swatch" data-theme="material"><span class="swatch-preview material-design"></span>Material</button>
+          <button class="theme-swatch" data-theme="ocean"><span class="swatch-preview ocean"></span>Ocean</button>
+          <button class="theme-swatch" data-theme="sunset"><span class="swatch-preview sunset"></span>Sunset</button>
+          <button class="theme-swatch" data-theme="forest"><span class="swatch-preview forest"></span>Forest</button>
+          <button class="theme-swatch" data-theme="crimson"><span class="swatch-preview crimson"></span>Crimson</button>
+          <button class="theme-swatch" data-theme="aurora"><span class="swatch-preview aurora"></span>Aurora</button>
+          <button class="theme-swatch" data-theme="midnight"><span class="swatch-preview midnight"></span>Midnight (AMOLED)</button>
+          <div class="theme-group-label">Light</div>
+          <button class="theme-swatch" data-theme="light"><span class="swatch-preview light-cream"></span>Light Cream</button>
+          <button class="theme-swatch" data-theme="greenwhite"><span class="swatch-preview green-white"></span>Green White</button>
+          <button class="theme-swatch" data-theme="sky"><span class="swatch-preview sky"></span>Sky</button>
+          <button class="theme-swatch" data-theme="peach"><span class="swatch-preview peach"></span>Peach</button>
+          <button class="theme-swatch" data-theme="lavender"><span class="swatch-preview lavender"></span>Lavender</button>
         </div>
+        <div class="setting-label" style="margin-top:16px">Live background</div>
+        <select id="settingBg" class="setting-select" style="width:100%">
+          <option value="auto">Theme default</option>
+          <option value="dust">Floating dust</option>
+          <option value="aurora">Aurora ribbons</option>
+          <option value="orbs">Glow orbs</option>
+          <option value="stars">Starfield warp</option>
+          <option value="rain">Digital rain</option>
+          <option value="waves">Ocean waves</option>
+          <option value="fireflies">Fireflies</option>
+          <option value="bubbles">Rising bubbles</option>
+          <option value="none">Off (static)</option>
+        </select>
+        <p class="profile-note" style="text-align:left;margin-top:8px">Backgrounds pick up the colours of your theme. They pause when the tab is hidden or when Reduce motion is on — choose Off to save battery on older phones.</p>
       </div>
       <div class="setting-group settings-panel" data-panel="sec-voice">
         <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Voice</div>
-        <div class="setting-row"><span>Mute voice output</span>
+        <div class="setting-row"><span>EKA speaks replies aloud</span>
           <label class="toggle-switch"><input type="checkbox" id="settingMute"/><span class="toggle-track"></span></label>
         </div>
+        <p class="profile-note" style="text-align:left">Off by default — EKA stays silent until you turn this on. You can still tap the speaker icon on any single message to hear just that one.</p>
         <div class="setting-row"><span>Language</span>
           <select id="settingLang" class="setting-select">
             <option value="auto">Auto detect</option>
@@ -177,7 +203,7 @@
           </div>
           <span id="apiKeyStatus" class="profile-note" style="margin:0"></span>
         </div>
-        <p class="profile-note">Optional — use your own <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a> key instead of the shared one. Stored only in this browser (localStorage), never sent anywhere except as a request header to this app.</p>
+        <p class="profile-note"><b>Required.</b> EKA has no shared key — get yours free at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">openrouter.ai/keys</a>. It is stored only in this browser (localStorage) and sent to OpenRouter as a request header; EKA's server never stores it. Free models work with a free key; Paid mode needs credits.</p>
       </div>
       <div class="setting-group settings-panel" data-panel="sec-appearance">
         <div class="setting-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>Appearance</div>
@@ -229,6 +255,32 @@
   </div>
 </div>
 
+<!-- ══ REQUIRED: OPENROUTER KEY GATE (bring-your-own-key only) ══ -->
+<div class="modal-overlay" id="keyGateOverlay" style="z-index:650">
+  <div class="modal" id="keyGateModal" role="dialog" aria-modal="true" aria-labelledby="keyGateTitle">
+    <div class="modal-header">
+      <span class="modal-title" id="keyGateTitle">Add your OpenRouter key</span>
+      <button class="modal-close" id="keyGateClose" type="button" title="Close — I'll add it later" aria-label="Close and add key later"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <p class="gate-lead">EKA runs on <b>your own</b> OpenRouter key. That keeps EKA free for everyone and your usage private to you. Just looking around? Close this — you can add the key any time.</p>
+      <ol class="gate-steps">
+        <li>Open <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">openrouter.ai/keys</a> and sign in (it's free).</li>
+        <li>Tap <b>Create key</b> and copy it.</li>
+        <li>Paste it below.</li>
+      </ol>
+      <input type="password" id="keyGateInput" class="setting-select" placeholder="sk-or-v1-…" autocomplete="off" spellcheck="false" style="width:100%">
+      <span id="keyGateStatus" class="profile-note" style="text-align:left;margin:0;min-height:16px"></span>
+      <button class="save-btn" id="keyGateSave" type="button">Save &amp; start chatting</button>
+      <p class="profile-note" style="text-align:left">
+        <b>Free mode</b> uses free models and works with a free key (rate limits apply).
+        <b>Paid mode</b> — faster, stronger models — needs credits on your OpenRouter account; you can switch any time in Settings → AI Mode.
+        Your key stays in this browser and is only forwarded to OpenRouter with each request — EKA's server never stores it.
+      </p>
+    </div>
+  </div>
+</div>
+
 <!-- ══ PAID MODE WARNING ══ -->
 <div class="modal-overlay" id="paidOverlay">
   <div class="modal" id="paidModal">
@@ -241,7 +293,7 @@
         <strong>This will charge your OpenRouter account.</strong>
         <ul>
           <li>Every message — and tools like code, documents and diagrams — is billed to <b>your own OpenRouter API key</b> at the chosen model's per-token price.</li>
-          <li>EKA's shared key is <b>never</b> used in Paid mode.</li>
+          <li>Paid mode uses different, stronger models than Free mode — usually faster, smarter replies.</li>
           <li>If you press Stop, a request that was already sent may still be billed.</li>
           <li>Make sure your account has credits, and consider setting a spending limit on the key at openrouter.ai/settings/keys.</li>
         </ul>
@@ -361,7 +413,7 @@
         <button id="imageToggle" class="icon-btn" title="Image Generation (OFF)" aria-pressed="false">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/><path d="M18 2.5l.55 1.25L19.8 4.3l-1.25.55L18 6.1l-.55-1.25L16.2 4.3l1.25-.55z" fill="currentColor" stroke="none"/></svg>
         </button>
-        <button id="muteToggle" class="icon-btn" title="Mute voice" aria-pressed="false">
+        <button id="muteToggle" class="icon-btn" title="Voice replies: off (tap to let EKA speak)" aria-pressed="false">
           <svg id="muteIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
         </button>
         <button id="voiceOnlyToggle" class="icon-btn" title="Voice-only mode" aria-pressed="false">
@@ -381,17 +433,17 @@
       <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
     </button>
 
-    <!-- API key missing banner — slides/fades in when no server or BYOK key is available -->
+        <!-- Red reminder — shown while no OpenRouter key is saved (after the key screen is closed) -->
     <div id="apiKeyBanner" class="apikey-banner" role="status">
       <div class="apikey-banner-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L22 7l-3-3"/></svg>
       </div>
       <div class="apikey-banner-text">
-        <strong>No AI key configured</strong>
-        <span>Add your own free OpenRouter key so EKA can start replying.</span>
+        <strong>No OpenRouter key added</strong>
+        <span>EKA needs your own free key before it can reply.</span>
       </div>
       <button id="apiKeyBannerBtn" class="apikey-banner-btn" type="button">Add API Key</button>
-      <button id="apiKeyBannerClose" class="apikey-banner-close" type="button" title="Dismiss">
+      <button id="apiKeyBannerClose" class="apikey-banner-close" type="button" title="Dismiss" aria-label="Dismiss reminder">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
