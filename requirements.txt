@@ -1,0 +1,10 @@
+flask
+requests
+python-dotenv
+flask-cors
+gTTS
+ddgs>=9.0
+python-docx
+reportlab
+markdown
+gunicorn
