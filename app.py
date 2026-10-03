@@ -39,9 +39,9 @@ DEV_NAME   = os.getenv("DEV_NAME", "Abhi Raj Singh")
 # "vision": True means the model accepts multimodal (image_url) content —
 # needed so attached photos are only routed to models that can actually see them.
 MODELS = [
-    {"id": "nvidia/nemotron-3-super-120b-a12b:free", "max_tokens": 2026, "temp": 0.65, "vision": False}, #only text
-    {"id": "liquid/lfm-2.5-2.6b:free", "max_tokens": 2026, "temp": 0.65, "vision": False}, #only text
-    {"id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 2026, "temp": 0.65, "vision": True}, #image redy
+    {"id": "nvidia/nemotron-3-super-120b-a12b:free", "max_tokens": 7890, "temp": 0.65, "vision": False}, #only text
+    {"id": "liquid/lfm-2.5-2.6b:free", "max_tokens": 7890, "temp": 0.65, "vision": False}, #only text
+    {"id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "max_tokens": 7890, "temp": 0.65, "vision": True}, #image redy
     #{"id": "nex-agi/nex-n2.5-mini:free", "max_tokens": 2026, "temp": 0.65, "vision": True}, #image redy
 ]
 
